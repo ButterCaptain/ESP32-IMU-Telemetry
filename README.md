@@ -451,7 +451,7 @@ With Madgwick stable, update rate became the bottleneck. Browser `fetch()` over 
 
 ESP-NOW was selected as the air-gap protocol. It operates on 2.4GHz but uses a connectionless framing with no SSID, no router, and no TCP stack — fundamentally lower overhead than Wi-Fi.
 
-Data format redesigned from JSON to `#pragma pack(push, 1)` binary struct — 20 bytes flat, zero serialization overhead, exact float precision. A second ESP32 added as a dedicated Ground Station. Node.js bridges serial to WebSocket. Browser visualizer connects to WebSocket persistently.
+Data format redesigned from JSON to `#pragma pack(push, 1)` binary struct — 16 bytes flat, zero serialization overhead, exact float precision. A second ESP32 added as a dedicated Ground Station. Node.js bridges serial to WebSocket. Browser visualizer connects to WebSocket persistently.
 
 The result is a low-latency telemetry link that also happens to mirror the architecture of real aerospace telemetry systems: a flight node, a radio link, a dedicated hardware receiver, a ground control software layer, and a visualization frontend.
 
