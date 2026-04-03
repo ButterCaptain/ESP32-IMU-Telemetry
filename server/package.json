@@ -1,0 +1,18 @@
+{
+  "name": "esp32-imu-telemetry-server",
+  "version": "1.0.0",
+  "description": "Node.js serial-to-WebSocket bridge for ESP32 IMU telemetry pipeline",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": ["esp32", "imu", "telemetry", "websocket", "serialport"],
+  "author": "your name here",
+  "license": "MIT",
+  "type": "commonjs",
+  "dependencies": {
+    "@serialport/parser-readline": "^13.0.0",
+    "serialport": "^13.0.0",
+    "ws": "^8.20.0"
+  }
+}
