@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ESP32 Flight Dynamics - Binary Mode</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <style>
+        body { background: #73838f; margin: 0; overflow: hidden; }
+        #hud { position: fixed; top: 20px; left: 20px; color: #39ff14; font-family: monospace; pointer-events: none; }
+        #status { position: fixed; top: 20px; right: 180px; color: #888; font-family: monospace; }
+        #tare-btn { position: fixed; top: 20px; right: 20px; padding: 10px; background: #111; color: #39ff14; border: 1px solid #39ff14; cursor: pointer; }
+    </style>
+</head>
+<body>
+<div id="hud">
+    PITCH <span id="hud-pitch">+0.0°</span><br>
+    ROLL  <span id="hud-roll">+0.0°</span><br>
+</div>
+<div id="status">● CONNECTING</div>
+<button id="tare-btn">TARE / CALIBRATE</button>
+<canvas id="three-canvas"></canvas>
+
+<script>
+const WS_URL = 'ws://localhost:8080';
+const SMOOTH = 0.12;
+
+// --- Three.js Setup ---
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x82a6ba);
+
+// ✦ FIXED: pulled back from (0,2,8) → (0,3,18), far plane 1000 → 2000
+const camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 1000);
+camera.position.set(0,1, 14);
+
+const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('three-canvas'), antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+
+scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+const light = new THREE.DirectionalLight(0xffffff, 1);
+light.position.set(5, 5, 5);
+scene.add(light);
+
+const pivot = new THREE.Group();
+scene.add(pivot);
+
+const geometry = new THREE.BoxGeometry(4, 0.2, 2);
+const material = new THREE.MeshPhongMaterial({ color: 0x00ff00, wireframe: true });
+const placeholder = new THREE.Mesh(geometry, material);
+pivot.add(placeholder);
+
+new THREE.GLTFLoader().load('./models/f22_raptor.glb', (gltf) => {
+    pivot.remove(placeholder);
+
+    // ✦ FIXED: auto-scale the model to a known size so it always fits the view
+    //    regardless of what unit scale the .glb was exported at
+    const box = new THREE.Box3().setFromObject(gltf.scene);
+    const size = box.getSize(new THREE.Vector3());
+    const maxDim = Math.max(size.x, size.y, size.z);
+    const scale = 6 / maxDim;          // normalise longest axis to 6 units
+    gltf.scene.scale.setScalar(scale);
+
+    // re-centre after scaling
+    box.setFromObject(gltf.scene);
+    const centre = box.getCenter(new THREE.Vector3());
+    gltf.scene.position.sub(centre);
+
+    pivot.add(gltf.scene);
+});
+
+// --- Orientation Math ---
+const rawQuat  = new THREE.Quaternion();
+const invTare  = new THREE.Quaternion();
+const targetQuat  = new THREE.Quaternion();
+const currentQuat = new THREE.Quaternion();
+let pendingTare = false;
+
+const hudPitch = document.getElementById('hud-pitch');
+const hudRoll  = document.getElementById('hud-roll');
+const statusEl = document.getElementById('status');
+const _euler   = new THREE.Euler();
+
+function animate() {
+    requestAnimationFrame(animate);
+
+    if (pendingTare) {
+        invTare.copy(rawQuat).invert();
+        pendingTare = false;
+    }
+
+    targetQuat.copy(rawQuat).multiply(invTare);
+    currentQuat.slerp(targetQuat, SMOOTH);
+    pivot.quaternion.copy(currentQuat);
+
+    _euler.setFromQuaternion(currentQuat, 'YXZ');
+    hudPitch.textContent = THREE.MathUtils.radToDeg(_euler.x).toFixed(1) + '°';
+    hudRoll.textContent  = THREE.MathUtils.radToDeg(_euler.z).toFixed(1) + '°';
+
+    renderer.render(scene, camera);
+}
+animate();
+
+// --- Binary Telemetry ---
+function connect() {
+    const ws = new WebSocket(WS_URL);
+    ws.binaryType = 'arraybuffer';
+
+    ws.onopen = () => {
+        statusEl.textContent = '● LIVE';
+        statusEl.style.color = '#39ff14';
+    };
+
+    ws.onmessage = (e) => {
+        const buffer = e.data;
+        const view = new DataView(buffer);
+
+        console.log(`Received ${buffer.byteLength} bytes`);
+
+        let headerFound = false;
+
+        for (let i = 0; i <= buffer.byteLength - 18; i++) {
+            if (view.getUint8(i) === 0xAA && view.getUint8(i + 1) === 0xBB) {
+
+                headerFound = true;
+
+                const qw = view.getFloat32(i + 2,  true);
+                const qx = view.getFloat32(i + 6,  true);
+                const qy = view.getFloat32(i + 10, true);
+                const qz = view.getFloat32(i + 14, true);
+
+
+                rawQuat.set(-qy, qz, -qx, qw).normalize();
+                break;
+            }
+        }
+        if (!headerFound) {
+            console.warn('Header not found in received packet!');
+        }
+    };
+
+    ws.onclose = () => {
+        statusEl.textContent = '● RECONNECTING';
+        statusEl.style.color = '#888';
+        setTimeout(connect, 2000);
+    };
+}
+
+connect();
+
+document.getElementById('tare-btn').onclick = () => { pendingTare = true; };
+
+window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+});
+</script>
+</body>
+</html>
