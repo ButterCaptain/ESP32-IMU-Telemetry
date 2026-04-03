@@ -98,7 +98,7 @@ Each fix is the same decision a working aerospace engineer would make. The archi
 │         GROUND CONTROL (Node.js Server)     │
 │                                             │
 │  serialport listener → buffer accumulator   │
-│  → hunt for 0xAA 0xBB → slice 22-byte packet│
+│  → hunt for 0xAA 0xBB → slice 18-byte packet│
 │  → WebSocket broadcast (ws://localhost:8080)│
 └─────────────────────────┬───────────────────┘
                           │ WebSocket (binary arraybuffer)
