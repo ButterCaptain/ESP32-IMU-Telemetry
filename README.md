@@ -153,9 +153,9 @@ Each fix is the same decision a working aerospace engineer would make. The archi
 
 The MPU6050 contains two independent sensors that measure complementary physical quantities, each with a fundamental flaw when used alone.
 
-The **gyroscope** measures angular rate in degrees per second. Integrating this over time gives orientation — the result is smooth and fast-responding. But integration accumulates error. Any small bias in the sensor reading compounds with every sample, causing the estimated orientation to **drift** continuously away from reality. Left uncorrected, a gyro-only estimate becomes unusable within seconds.
+The **gyroscope** measures angular rate in degrees per second. Integrating this over time gives orientation, the result is smooth and fast-responding. But integration accumulates error. Any small bias in the sensor reading compounds with every sample, causing the estimated orientation to **drift** continuously away from reality. Left uncorrected, a gyro-only estimate becomes unusable within seconds.
 
-The **accelerometer** measures the vector sum of all forces on the sensor, including gravity. When the sensor is stationary or at constant velocity, the accelerometer points directly at the ground — giving an absolute, drift-free tilt reference. But the moment the sensor accelerates, the reading is corrupted by linear acceleration and can no longer be trusted as a gravity reference.
+The **accelerometer** measures the vector sum of all forces on the sensor, including gravity. When the sensor is stationary or at constant velocity, the accelerometer points directly at the ground, giving an absolute, drift-free tilt reference. But the moment the sensor accelerates, the reading is corrupted by linear acceleration and can no longer be trusted as a gravity reference.
 
 Sensor fusion combines both: the gyroscope provides smooth, fast short-term tracking; the accelerometer provides a long-term absolute reference that corrects gyroscope drift.
 
