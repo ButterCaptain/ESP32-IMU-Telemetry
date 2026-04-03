@@ -8,7 +8,8 @@
 
 > A full attitude estimation and real-time 3D visualization pipeline built on two ESP32s, an MPU6050 IMU, and a browser-based WebGL dashboard. Orientation data is fused using the Madgwick AHRS filter, packed into a 16-byte binary struct, and transmitted peer-to-peer via ESP-NOW — bypassing TCP/IP entirely to achieve low-latency telemetry that mirrors real-world aerospace ground station architecture.
 
-![Demo GIF](docs/demo.gif)
+
+https://github.com/user-attachments/assets/e52e89d5-0115-4752-a855-3e408e3773ef
 
 ---
 
