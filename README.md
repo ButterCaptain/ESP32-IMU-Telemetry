@@ -29,7 +29,6 @@ https://github.com/user-attachments/assets/e52e89d5-0115-4752-a855-3e408e3773ef
   - [Ground Station — Firmware](#ground-station--firmware)
   - [Ground Control — Node.js Server](#ground-control--nodejs-server)
   - [Dashboard — Frontend Visualizer](#dashboard--frontend-visualizer)
-- [Schematic](#schematic)
 - [Getting Started](#getting-started)
 - [Engineering Log — Design Decisions & Dead Ends](#engineering-log--design-decisions--dead-ends)
 - [Known Issues & Future Work](#known-issues--future-work)
@@ -323,17 +322,6 @@ model.quaternion.set(x, y, z, w);    // Three.js uses [x, y, z, w] order
 ```
 
 > **On binary vs. JSON:** The initial implementation transmitted quaternion data as a JSON string — e.g., `{"w":0.99,"x":0.01,"y":0.02,"z":0.00}`. This produced packets up to 85 bytes for 16 bytes of actual data, added CPU overhead for string formatting on the ESP32, and introduced parsing complexity on the receive side. Switching to raw binary reduced packet size by ~75%, eliminated formatting overhead entirely, and guaranteed exact 32-bit float precision with no rounding from decimal string conversion.
-
----
-
-## Schematic
-
-**Flight Node:**
-
-
-*Ground Station has no external components — ESP32 to PC via USB only.*
-
----
 
 ## Getting Started
 
