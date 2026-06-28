@@ -95,8 +95,7 @@ struct IMUData_t {
   float dt = 0.1; // Delta time (how fast each loop runs)
 
   // -- Lets set up the WiFi -- 
-  // 00:70:07:E6:D3:74
-  uint8_t broadcastAddress[] = {0x00, 0x70, 0x07, 0xE6, 0xD3, 0x74};
+  uint8_t broadcastAddress[] = {};
 
 
   float findMean(int32_t Value);
